@@ -3,11 +3,11 @@ return {
   opts = {
     servers = {
       tsserver = {},
+      standardrb = {},
       solargraph = {
-        cmd = { "bundle", "exec", "solargraph" },
-        --   -- init_options = {
-        --   --   formatter = "auto",
-        --   -- },
+        init_options = {
+          formatting = false,
+        },
       },
     },
   },
