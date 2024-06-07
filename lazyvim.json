@@ -3,10 +3,11 @@
     "lazyvim.plugins.extras.formatting.prettier",
     "lazyvim.plugins.extras.lang.go",
     "lazyvim.plugins.extras.lang.ruby",
-    "lazyvim.plugins.extras.lang.yaml"
+    "lazyvim.plugins.extras.lang.yaml",
+    "lazyvim.plugins.extras.linting.eslint"
   ],
   "news": {
-    "NEWS.md": "5204"
+    "NEWS.md": "5950"
   },
   "version": 6
 }
