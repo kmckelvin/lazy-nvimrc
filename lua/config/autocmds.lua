@@ -8,5 +8,8 @@ if vim.fn.exists("$TMUX") then
     { command = 'call system("tmux rename-window vi:" . fnamemodify(getcwd(), ":t"))' }
   )
 
-  vim.api.nvim_create_autocmd({ "VimLeave", "VimSuspend" }, { command = 'call system("tmux setw automatic-rename")' })
+  vim.api.nvim_create_autocmd(
+    { "VimLeave", "VimSuspend" },
+    { command = 'call system("tmux setw automatic-rename on")' }
+  )
 end
