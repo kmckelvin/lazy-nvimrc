@@ -9,5 +9,6 @@ return {
 
     vim.cmd('let test#strategy="neovim"')
     vim.cmd("let test#javascript#ava#file_pattern = '\\v.*\\.ava\\.(t|j)s(x?)$'")
+    vim.cmd("let test#javascript#ava#options = '--serial'")
   end,
 }
