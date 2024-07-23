@@ -6,14 +6,5 @@ return {
         border = "rounded",
       },
     },
-    servers = {
-      tsserver = {},
-      standardrb = {},
-      solargraph = {
-        init_options = {
-          formatting = false,
-        },
-      },
-    },
   },
 }
