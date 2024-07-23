@@ -2,6 +2,8 @@ return {
   "nvim-treesitter/nvim-treesitter-context",
   opts = {
     enable = true,
+    multiline_threshold = 1,
+    max_lines = 5,
     default = {
       "class",
       "function",
