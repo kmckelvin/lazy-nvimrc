@@ -26,3 +26,6 @@ vim.api.nvim_create_user_command("Wa", "wall", {})
 
 vim.api.nvim_create_user_command("Wq", "wq", {})
 vim.api.nvim_create_user_command("Wqa", "wqall", {})
+
+-- split parameters into multiple lines
+vim.keymap.set("n", "<leader>cz", "0maf(a<cr><esc>f)i<cr><esc>k<cmd>s/, /,\\r/g<cr><cmd>noh<cr>j=`a<cmd>delmarks a<cr>")
