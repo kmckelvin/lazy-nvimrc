@@ -4,3 +4,4 @@
 require("config.options.ruby")
 
 vim.opt.scrolloff = 5
+vim.opt.title = true
