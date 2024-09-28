@@ -1,0 +1,7 @@
+{
+  "Frozen String Literal": {
+    "scope": "ruby",
+    "prefix": ["froz"],
+    "body": "# frozen_string_literal: true\n"
+  }
+}
