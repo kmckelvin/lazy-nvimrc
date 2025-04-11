@@ -55,3 +55,13 @@ local function edit_file_under_cursor()
 end
 
 vim.keymap.set("n", "<leader>gf", edit_file_under_cursor)
+
+vim.api.nvim_create_user_command("CopyRelativePath", function()
+  local full_path = vim.fn.expand("%:p")
+  local root = vim.fn.getcwd()
+  local relative_path = full_path:sub(#root + 2) -- +2 to remove the leading slash
+  vim.fn.setreg("+", relative_path)
+  print("Copied to clipboard: " .. relative_path)
+end, {})
+
+vim.keymap.set("n", "<leader>yf", ":CopyRelativePath<CR>", { noremap = true, silent = false })
