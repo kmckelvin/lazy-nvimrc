@@ -1,13 +1,16 @@
 -- Keymaps are automatically loaded on the VeryLazy event
 -- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
 -- Add any additional keymaps here
-local fzf = require("fzf-lua")
+if not vim.g.vscode then
+  local fzf = require("fzf-lua")
+  vim.keymap.set("n", "<leader>gw", fzf.lsp_workspace_symbols, { desc = "Workspace Symbols" })
+end
+
 vim.keymap.set("n", "<leader>fs", "<cmd>w<cr>", { silent = true, desc = "Save the current buffer" })
 vim.keymap.set("n", "<leader>gs", vim.cmd.Git, { desc = "Git status" })
 vim.keymap.set("n", "<leader>gc", function()
   vim.cmd.Git("commit")
 end, { desc = "Git commit" })
-vim.keymap.set("n", "<leader>gw", fzf.lsp_workspace_symbols, { desc = "Workspace Symbols" })
 
 vim.keymap.set("n", "Q", ":q<CR>", { silent = true })
 
