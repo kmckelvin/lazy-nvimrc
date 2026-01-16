@@ -24,10 +24,44 @@ return {
     vim.keymap.set({ "n", "x" }, "<leader>ax", function()
       opencode.select()
     end, { desc = "Execute opencode action…" })
-    vim.keymap.set({ "n", "x" }, "<leader>ad", function()
-      opencode.prompt("@this")
-    end, { desc = "Add to opencode" })
-    vim.keymap.set({ "n", "t" }, "<leader>ac", function()
+    local function copy_context_reference()
+      local full_path = vim.api.nvim_buf_get_name(0)
+      if full_path == "" then
+        vim.notify("No file to copy", vim.log.levels.WARN)
+        return
+      end
+
+      local root = vim.fn.getcwd()
+      local relative_path = full_path
+      if full_path:sub(1, #root) == root then
+        relative_path = full_path:sub(#root + 2)
+      end
+
+      local reference = "@" .. relative_path
+      local mode = vim.fn.mode()
+      if mode == "v" or mode == "V" or mode == "\22" then
+        local start_line = vim.fn.line("v")
+        local end_line = vim.fn.line(".")
+        if start_line == 0 or end_line == 0 then
+          start_line = vim.fn.line("'<")
+          end_line = vim.fn.line("'>")
+        end
+        if start_line > end_line then
+          start_line, end_line = end_line, start_line
+        end
+        if start_line == end_line then
+          reference = string.format("%s:L%d", reference, start_line)
+        else
+          reference = string.format("%s:L%d-%d", reference, start_line, end_line)
+        end
+      end
+
+      vim.fn.setreg("+", reference)
+      vim.notify("Copied to clipboard: " .. reference)
+    end
+
+    vim.keymap.set({ "n", "x" }, "<leader>ad", copy_context_reference, { desc = "Copy context reference" })
+    vim.keymap.set({ "n" }, "<leader>ac", function()
       opencode.toggle()
     end, { desc = "Toggle opencode" })
     vim.keymap.set("n", "<S-C-u>", function()
