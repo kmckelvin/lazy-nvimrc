@@ -105,7 +105,7 @@ local function edit_file_under_cursor()
     file = grabbed_string
   end
 
-  if vim.loop.fs_stat(vim.fn.getcwd() .. "/" .. file) ~= nil then
+  if vim.uv.fs_stat(vim.fn.getcwd() .. "/" .. file) ~= nil then
     vim.cmd("wincmd p")
     vim.cmd("e " .. file)
 
