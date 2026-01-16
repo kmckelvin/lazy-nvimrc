@@ -31,7 +31,68 @@ vim.api.nvim_create_user_command("Wq", "wq", {})
 vim.api.nvim_create_user_command("Wqa", "wqall", {})
 
 -- split parameters into multiple lines
-vim.keymap.set("n", "<leader>cz", "0maf(a<cr><esc>f)i<cr><esc>k<cmd>s/, /,\\r/g<cr><cmd>noh<cr>j=`a<cmd>delmarks a<cr>")
+local function split_params_on_commas()
+  local row = vim.api.nvim_win_get_cursor(0)[1]
+  local line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1]
+  if not line or line == "" then
+    return
+  end
+
+  local indent = line:match("^%s*") or ""
+  local open_paren = line:find("%(")
+  if not open_paren then
+    return
+  end
+
+  local close_paren
+  for i = #line, 1, -1 do
+    if line:sub(i, i) == ")" then
+      close_paren = i
+      break
+    end
+  end
+  if not close_paren then
+    return
+  end
+
+  local prefix = line:sub(1, open_paren - 1)
+  local args = line:sub(open_paren + 1, close_paren - 1)
+  local suffix = line:sub(close_paren + 1)
+  local trailing_comma = suffix:match("^%s*,%s*$") ~= nil
+
+  local parts = {}
+  for part in args:gmatch("[^,]+") do
+    local trimmed = vim.trim(part)
+    if trimmed ~= "" then
+      table.insert(parts, trimmed)
+    end
+  end
+
+  if #parts == 0 then
+    return
+  end
+
+  local lines = { prefix .. "(" }
+  local inner_indent = indent .. "  "
+  for index, part in ipairs(parts) do
+    local innerSuffix = index == #parts and "" or ","
+    table.insert(lines, inner_indent .. part .. innerSuffix)
+  end
+
+  local closing = indent .. ")"
+  if trailing_comma then
+    closing = closing .. ","
+  else
+    if suffix:match("%S") then
+      closing = closing .. suffix
+    end
+  end
+  table.insert(lines, closing)
+
+  vim.api.nvim_buf_set_lines(0, row - 1, row, false, lines)
+end
+
+vim.keymap.set("n", "<leader>cz", split_params_on_commas, { desc = "Split params on commas" })
 
 local function edit_file_under_cursor()
   vim.cmd('normal! viWo"py')
