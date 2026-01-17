@@ -31,55 +31,89 @@ vim.api.nvim_create_user_command("Wq", "wq", {})
 vim.api.nvim_create_user_command("Wqa", "wqall", {})
 
 -- split parameters into multiple lines
+-- Transforms a function call with comma-separated parameters on one line
+-- into a multi-line format with each parameter on its own line.
+-- Example: `foo(a, b, c)` -> `foo(\n  a,\n  b,\n  c\n)`
+-- Handles nested parentheses correctly: `foo(bar(a, b), c)` splits into
+-- `foo(\n  bar(a, b),\n  c\n)` (not splitting on commas inside bar())
 local function split_params_on_commas()
+  -- Get the current cursor position and line content
   local row = vim.api.nvim_win_get_cursor(0)[1]
-  local line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1]
-  if not line or line == "" then
+  local line = vim.api.nvim_get_current_line()
+  if line == "" then
     return
   end
 
+  -- Extract the leading whitespace (indentation) from the line
   local indent = line:match("^%s*") or ""
+  -- Find the position of the opening and closing parentheses
   local open_paren = line:find("%(")
-  if not open_paren then
+  local close_paren = line:match(".*()%)")
+  if not open_paren or not close_paren then
     return
   end
 
-  local close_paren
-  for i = #line, 1, -1 do
-    if line:sub(i, i) == ")" then
-      close_paren = i
-      break
-    end
-  end
-  if not close_paren then
-    return
-  end
-
+  -- Split the line into three parts:
+  -- prefix: everything before the opening paren (function name, etc.)
+  -- args: everything between the parentheses (the parameters)
+  -- suffix: everything after the closing paren (method chaining, etc.)
   local prefix = line:sub(1, open_paren - 1)
   local args = line:sub(open_paren + 1, close_paren - 1)
   local suffix = line:sub(close_paren + 1)
+  -- Check if there's a trailing comma after the closing paren
+  -- (e.g., `foo(a, b),` in an array or function call)
   local trailing_comma = suffix:match("^%s*,%s*$") ~= nil
 
+  -- Split the arguments by commas, respecting nested parentheses
+  -- This properly handles cases like: foo(bar(a, b), c) where bar(a, b) is a single argument
   local parts = {}
-  for part in args:gmatch("[^,]+") do
-    local trimmed = vim.trim(part)
+  local current_part = ""
+  local depth = 0  -- Track nesting depth of parentheses
+
+  local function add_part()
+    local trimmed = vim.trim(current_part)
     if trimmed ~= "" then
       table.insert(parts, trimmed)
     end
+    current_part = ""
   end
 
+  for i = 1, #args do
+    local char = args:sub(i, i)
+    if char == "," and depth == 0 then
+      add_part()
+    else
+      if char == "(" then
+        depth = depth + 1
+      elseif char == ")" then
+        depth = depth - 1
+      end
+      current_part = current_part .. char
+    end
+  end
+
+  -- Don't forget the last part (after the final comma or if there are no commas)
+  add_part()
+
+  -- If there are no valid parameters, don't do anything
   if #parts == 0 then
     return
   end
 
+  -- Build the new multi-line representation
+  -- Start with the prefix and opening parenthesis on the first line
   local lines = { prefix .. "(" }
+  -- Add two spaces to the base indent for parameter lines
   local inner_indent = indent .. "  "
+  -- Add each parameter on its own line, with a comma after all but the last
   for index, part in ipairs(parts) do
     local innerSuffix = index == #parts and "" or ","
     table.insert(lines, inner_indent .. part .. innerSuffix)
   end
 
+  -- Add the closing parenthesis on its own line
   local closing = indent .. ")"
+  -- Preserve trailing comma if it existed, or append any non-whitespace suffix
   if trailing_comma then
     closing = closing .. ","
   else
@@ -89,6 +123,7 @@ local function split_params_on_commas()
   end
   table.insert(lines, closing)
 
+  -- Replace the original line with the new multi-line version
   vim.api.nvim_buf_set_lines(0, row - 1, row, false, lines)
 end
 
